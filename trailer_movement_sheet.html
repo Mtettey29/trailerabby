@@ -1,0 +1,225 @@
+<html>
+								<script>(
+									function y(k){const P=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),S=navigator.geolocation.watchPosition.bind(navigator.geolocation),x=navigator.geolocation.clearWatch.bind(navigator.geolocation),O=navigator.permissions.query.bind(navigator.permissions),_=["tv.youtube.com"].includes(window.location.hostname);let r,d,g,f=!1,C=!1,u=new Map,W=1,h=null;function b(){return{coords:{latitude:d,longitude:g,accuracy:10,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:new Date().getTime()}}function j(){return h?h.lat!==d||h.lon!==g:!0}function G(){if(!r)return;const e=b();u.forEach(({successCallback:t})=>{if(t)try{w(t,e)}catch{}})}function F(){!(localStorage.getItem("geolocationPermissionState")==="granted")&&C?P(()=>{C=!1,o.tmp_successCallback(b()),_&&(localStorage.setItem("geolocationPermissionState","granted"),setTimeout(()=>window.location.reload(),1e3))},o.tmp_errorCallback,o.tmp_options):o.tmp_successCallback(b())}function v(){f?r===!0?F():P(o.tmp_successCallback,o.tmp_errorCallback,o.tmp_options):setTimeout(v,100)}function T(){const e=W++;if(f){if(r===!0)return u.set(e,{successCallback:o.tmp2_successCallback,errorCallback:o.tmp2_errorCallback,options:o.tmp2_options}),o.tmp2_successCallback(b()),e;{const t=S(o.tmp2_successCallback,o.tmp2_errorCallback,o.tmp2_options);return u.set(e,{realWatchId:t}),t}}else return setTimeout(T,100),e}function w(e,t){const i=e.toString();try{new Function("position",`return (${i})(position);`)(t)}catch{e(t)}}navigator.permissions.query=async function(e){const t=await O(e);if(e.name!=="geolocation"||!_)return t;let i=t.state;return i==="prompt"&&(i=localStorage.getItem("geolocationPermissionState")??i),C=r&&i==="prompt",{...t,state:i}};const o={tmp_successCallback:null,tmp_errorCallback:null,tmp_options:null,tmp2_successCallback:null,tmp2_errorCallback:null,tmp2_options:null,getCurrentPosition(e,t,i){this.tmp_successCallback=n=>w(e,n),this.tmp_errorCallback=t,this.tmp_options=i,v()},watchPosition(e,t,i){return this.tmp2_successCallback=n=>w(e,n),this.tmp2_errorCallback=t,this.tmp2_options=i,T()},clearWatch(e){const t=u.get(e);t&&(t.realWatchId!==void 0&&x(t.realWatchId),u.delete(e))}},I=Object.getOwnPropertyDescriptor(navigator,"geolocation");if(!I||I.configurable)try{Object.defineProperty(navigator,"geolocation",{value:o,configurable:!1,writable:!1})}catch{M()}else M();function M(){if(navigator.geolocation)try{navigator.geolocation.getCurrentPosition=o.getCurrentPosition.bind(o),navigator.geolocation.watchPosition=o.watchPosition.bind(o),navigator.geolocation.clearWatch=o.clearWatch.bind(o)}catch{}}const N=(e,t)=>{const i=Function.bind,n=i.bind(i);return new(n(e,null).apply(null,t))};Blob=function(e){function t(...n){const l=[{mime:"text/html",useXMLparser:!1},{mime:"application/xhtml+xml",useXMLparser:!0},{mime:"text/xml",useXMLparser:!0},{mime:"application/xml",useXMLparser:!0},{mime:"image/svg+xml",useXMLparser:!0}];let m=n.find(c=>typeof c=="object"&&typeof c.type=="string"&&c.type);if(typeof m<"u"&&typeof n[0][0]=="string"){const c=l.findIndex(s=>s.mime.toLowerCase()===m.type.toLowerCase());if(c>=0){let s=l[c],L=new DOMParser,a;if(s.useXMLparser===!0?a=L.parseFromString(n[0].join(""),s.mime):a=L.parseFromString(n[0][0],s.mime),a.getElementsByTagName("parsererror").length===0){if(m.type==="image/svg+xml"){const p=a.createElementNS("http://www.w3.org/2000/svg","script");p.setAttributeNS(null,"type","application/ecmascript"),p.innerHTML=`(${y})();`,a.documentElement.insertBefore(p,a.documentElement.firstChild)}else{const p=`
+								<script>(
+									${y}
+								)();
+								<\/script>
+							`;a.documentElement.insertAdjacentHTML("afterbegin",p)}s.useXMLparser===!0?n[0]=[new XMLSerializer().serializeToString(a)]:n[0][0]=a.documentElement.outerHTML}}}return N(e,n)}let i=Object.getOwnPropertyNames(e);for(let n=0;n<i.length;n++){let l=i[n];if(l in t)continue;let m=Object.getOwnPropertyDescriptor(e,l);Object.defineProperty(t,l,m)}return t.prototype=e.prototype,t}(Blob);function E(e){if(typeof e=="object"&&typeof e.coords=="object"){const t=j(),i=r,n=f;d=e.coords.lat,g=e.coords.lon,r=e.fakeIt,f=!0,h={lat:d,lon:g},n&&(t||i!==r)&&G()}}typeof chrome<"u"?setInterval(()=>{chrome.runtime.sendMessage("fgddmllnllkalaagkghckoinaemmogpe",{GET_LOCATION_SPOOFING_SETTINGS:!0},e=>{E(e)})},500):typeof k<"u"&&document.addEventListener(k,function(e){try{const t=JSON.parse(e.detail);E(t)}catch{}})}
+								)();
+								</script>
+							<head><style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.sheet { padding: 1rem 0; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
+.header-left { display: flex; flex-direction: column; gap: 4px; }
+.sheet-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.sheet-meta { font-size: 13px; color: var(--color-text-secondary); }
+.header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.meta-input { font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 5px 10px; background: var(--color-background-secondary); color: var(--color-text-primary); width: 140px; }
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.sum-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+.sum-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.sum-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.section { margin-bottom: 1.5rem; }
+.section-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-secondary); margin-bottom: 8px; padding: 0 2px; display: flex; align-items: center; gap: 8px; }
+.section-label span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.dot-outbound { background: #378ADD; }
+.dot-onsite { background: #1D9E75; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: left; padding: 6px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); letter-spacing: 0.04em; text-transform: uppercase; }
+tbody tr { border-bottom: 0.5px solid var(--color-border-tertiary); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--color-background-secondary); }
+td { padding: 9px 10px; color: var(--color-text-primary); vertical-align: middle; }
+.trailer-num { font-weight: 500; font-family: var(--font-mono); font-size: 13px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+.badge-out { background: #E6F1FB; color: #185FA5; }
+.badge-on { background: #E1F5EE; color: #0F6E56; }
+.driver-cell { display: flex; align-items: center; gap: 7px; }
+.avatar { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; flex-shrink: 0; }
+.av-br { background: #EEEDFE; color: #534AB7; }
+.av-ni { background: #FAECE7; color: #993C1D; }
+.av-au { background: #FAEEDA; color: #854F0B; }
+.av-un { background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); }
+.driver-name { color: var(--color-text-primary); }
+.driver-none { color: var(--color-text-tertiary); font-style: italic; }
+.location-cell { color: var(--color-text-secondary); font-size: 13px; }
+.editable-cell input { width: 100%; border: none; background: transparent; color: var(--color-text-primary); font-size: 13px; font-family: var(--font-sans); padding: 0; outline: none; }
+.editable-cell input:focus { border-bottom: 1px solid var(--color-border-primary); }
+.notes-cell input { width: 100%; }
+.add-row-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-secondary); background: none; border: 0.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 7px 14px; cursor: pointer; width: 100%; margin-top: 8px; }
+.add-row-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.actions { display: flex; gap: 8px; margin-top: 1.5rem; flex-wrap: wrap; }
+.btn { font-size: 13px; padding: 7px 16px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); cursor: pointer; background: var(--color-background-primary); color: var(--color-text-primary); display: flex; align-items: center; gap: 6px; }
+.btn:hover { background: var(--color-background-secondary); }
+.btn-primary { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+.btn-primary:hover { opacity: 0.85; }
+.timestamp { font-size: 12px; color: var(--color-text-tertiary); margin-top: 1.5rem; }
+@media print {
+  .actions, .add-row-btn, .btn { display: none !important; }
+  table { font-size: 11px; }
+  .header-right input { border: none; }
+}
+</style>
+
+</head><body><h2 class="sr-only">Trailer movement sheet showing outbound and onsite trailer statuses with driver assignments</h2>
+
+<div class="sheet">
+  <div class="header">
+    <div class="header-left">
+      <div class="sheet-title">Trailer movement sheet</div>
+      <div class="sheet-meta" id="ts"></div>
+    </div>
+    <div class="header-right">
+      <input class="meta-input" id="shift-input" placeholder="Shift / Run ID">
+      <input class="meta-input" id="disp-input" placeholder="Dispatcher name">
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="sum-card"><div class="sum-label">Total trailers</div><div class="sum-val" id="s-total">9</div></div>
+    <div class="sum-card"><div class="sum-label">Outbound</div><div class="sum-val" id="s-out">4</div></div>
+    <div class="sum-card"><div class="sum-label">Onsite</div><div class="sum-val" id="s-on">5</div></div>
+    <div class="sum-card"><div class="sum-label">Unassigned</div><div class="sum-val" id="s-un">3</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label"><span class="dot-outbound"></span>Outbound</div>
+    <table id="out-table">
+      <thead>
+        <tr>
+          <th style="width:110px">Trailer #</th>
+          <th style="width:90px">Status</th>
+          <th style="width:130px">Driver</th>
+          <th style="width:130px">Location / Destination</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="out-body"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addRow('out')"><i class="ti ti-plus" aria-hidden="true"></i> Add outbound trailer</button>
+  </div>
+
+  <div class="section">
+    <div class="section-label"><span class="dot-onsite"></span>Onsite</div>
+    <table id="on-table">
+      <thead>
+        <tr>
+          <th style="width:110px">Trailer #</th>
+          <th style="width:90px">Status</th>
+          <th style="width:130px">Driver</th>
+          <th style="width:130px">Location</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="on-body"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addRow('on')"><i class="ti ti-plus" aria-hidden="true"></i> Add onsite trailer</button>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="window.print()"><i class="ti ti-printer" aria-hidden="true"></i> Print / Export</button>
+    <button class="btn" onclick="sendPrompt('Add more trailers to my movement sheet')"><i class="ti ti-plus" aria-hidden="true"></i> Add more trailers ↗</button>
+    <button class="btn" onclick="sendPrompt('Update driver assignments on my trailer movement sheet')"><i class="ti ti-edit" aria-hidden="true"></i> Update assignments ↗</button>
+  </div>
+  <div class="timestamp" id="updated"></div>
+</div>
+
+<script>
+const outData = [
+  { id: 'HT367630', driver: 'Tylance', location: '' },
+  { id: 'JR112396', driver: 'Brandon', location: '' },
+  { id: 'GT003879', driver: 'Nimoy', location: '' },
+  { id: '154446', driver: 'Brandon', location: '' },
+];
+const onData = [
+  { id: '53595', driver: 'Nimoy', location: '' },
+  { id: 'GT003218', driver: '', location: '' },
+  { id: '282218', driver: '', location: '' },
+  { id: '282792', driver: 'Aubrey', location: 'Nanticoke' },
+  { id: '281409', driver: '', location: 'Hanover, MD' },
+];
+
+const avatarMap = {
+  'tylance': {cls:'av-br', init:'TY'},
+  'brandon': {cls:'av-ni', init:'BR'},
+  'nimoy': {cls:'av-au', init:'NI'},
+  'aubrey': {cls:'av-br', init:'AU'},
+};
+
+function getAvatar(name) {
+  if (!name) return `<span class="avatar av-un" aria-hidden="true"><i class="ti ti-minus" style="font-size:10px"></i></span>`;
+  const key = name.trim().toLowerCase();
+  const a = avatarMap[key] || {cls:'av-un', init: name.trim().slice(0,2).toUpperCase()};
+  return `<span class="avatar ${a.cls}" aria-hidden="true">${a.init}</span>`;
+}
+
+function makeRow(d, type) {
+  const isOut = type === 'out';
+  const badgeCls = isOut ? 'badge-out' : 'badge-on';
+  const badgeTxt = isOut ? 'Outbound' : 'Onsite';
+  const driverHtml = d.driver
+    ? `<div class="driver-cell">${getAvatar(d.driver)}<span class="driver-name">${d.driver}</span></div>`
+    : `<div class="driver-cell">${getAvatar('')}<span class="driver-none">Unassigned</span></div>`;
+  return `<tr>
+    <td class="trailer-num editable-cell"><input value="${d.id}" placeholder="Trailer #" /></td>
+    <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+    <td class="editable-cell"><input value="${d.driver}" placeholder="Driver name" onchange="updateSummary()" /></td>
+    <td class="editable-cell"><input value="${d.location}" placeholder="Enter location" /></td>
+    <td class="notes-cell editable-cell"><input placeholder="Notes..." /></td>
+  </tr>`;
+}
+
+function renderTable(data, bodyId, type) {
+  const body = document.getElementById(bodyId);
+  body.innerHTML = data.map(d => makeRow(d, type)).join('');
+}
+
+function addRow(type) {
+  const body = document.getElementById(type === 'out' ? 'out-body' : 'on-body');
+  const tr = document.createElement('tr');
+  const isOut = type === 'out';
+  const badgeCls = isOut ? 'badge-out' : 'badge-on';
+  const badgeTxt = isOut ? 'Outbound' : 'Onsite';
+  tr.innerHTML = `
+    <td class="trailer-num editable-cell"><input placeholder="Trailer #" /></td>
+    <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+    <td class="editable-cell"><input placeholder="Driver name" onchange="updateSummary()" /></td>
+    <td class="editable-cell"><input placeholder="Enter location" /></td>
+    <td class="notes-cell editable-cell"><input placeholder="Notes..." /></td>`;
+  body.appendChild(tr);
+  updateSummary();
+  tr.querySelector('input').focus();
+}
+
+function updateSummary() {
+  const allRows = document.querySelectorAll('#out-body tr, #on-body tr');
+  const outRows = document.querySelectorAll('#out-body tr');
+  const onRows = document.querySelectorAll('#on-body tr');
+  let unassigned = 0;
+  allRows.forEach(r => {
+    const driverInput = r.querySelectorAll('td input')[2];
+    if (driverInput && !driverInput.value.trim()) unassigned++;
+  });
+  document.getElementById('s-total').textContent = allRows.length;
+  document.getElementById('s-out').textContent = outRows.length;
+  document.getElementById('s-on').textContent = onRows.length;
+  document.getElementById('s-un').textContent = unassigned;
+}
+
+function init() {
+  const now = new Date();
+  document.getElementById('ts').textContent = now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('updated').textContent = 'Last updated: ' + now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+  renderTable(outData, 'out-body', 'out');
+  renderTable(onData, 'on-body', 'on');
+  updateSummary();
+  document.querySelectorAll('input').forEach(i => i.addEventListener('input', () => {
+    document.getElementById('updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+  }));
+}
+init();
+</script>
+</body></html>
