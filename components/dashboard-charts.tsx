@@ -1,25 +1,29 @@
 "use client";
 
-import { STATUS_LABELS } from "@/lib/types";
-import type { TrailerStatus } from "@/lib/types";
+import {
+  FLEET_CHART_COLORS,
+  FLEET_CHART_LABELS,
+  type FleetChartBucket,
+} from "@/lib/trailer-display";
 import { PanelCard } from "@/components/panel-card";
 
-const STATUS_COLORS: Record<TrailerStatus, string> = {
-  outbound: "#1d9bf0",
-  onsite: "#00ba7c",
-  in_shop: "#ffad1f",
-};
+const FLEET_BUCKETS: FleetChartBucket[] = [
+  "in_transit",
+  "at_location",
+  "under_maintenance",
+  "other",
+];
 
-interface StatusDonutProps {
-  counts: Record<TrailerStatus, number>;
+interface FleetStatusChartProps {
+  counts: Record<FleetChartBucket, number>;
 }
 
-export function StatusDonutChart({ counts }: StatusDonutProps) {
-  const entries = (Object.keys(counts) as TrailerStatus[]).map((status) => ({
-    status,
-    label: STATUS_LABELS[status],
-    count: counts[status],
-    color: STATUS_COLORS[status],
+export function StatusDonutChart({ counts }: FleetStatusChartProps) {
+  const entries = FLEET_BUCKETS.map((bucket) => ({
+    bucket,
+    label: FLEET_CHART_LABELS[bucket],
+    count: counts[bucket],
+    color: FLEET_CHART_COLORS[bucket],
   }));
 
   const total = entries.reduce((sum, item) => sum + item.count, 0);
@@ -51,7 +55,7 @@ export function StatusDonutChart({ counts }: StatusDonutProps) {
                 const dash = (item.count / total) * circumference;
                 const circle = (
                   <circle
-                    key={item.status}
+                    key={item.bucket}
                     cx={size / 2}
                     cy={size / 2}
                     r={radius}
@@ -82,12 +86,12 @@ export function StatusDonutChart({ counts }: StatusDonutProps) {
               const pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
               return (
                 <li
-                  key={item.status}
+                  key={item.bucket}
                   className="flex items-center justify-between gap-2 text-xs"
                 >
                   <span className="flex min-w-0 items-center gap-2 text-[#71767b]">
                     <span
-                      className="size-2 shrink-0 rounded-sm"
+                      className="size-2 shrink-0 rounded-none"
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="truncate">{item.label}</span>
@@ -129,9 +133,9 @@ export function LocationBarChart({ locations }: LocationBarsProps) {
                   {item.count}
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-sm bg-[#16181c]">
+              <div className="h-2 overflow-hidden rounded-none bg-[#16181c]">
                 <div
-                  className="h-full rounded-sm bg-[#1d9bf0]"
+                  className="h-full rounded-none bg-[#1d9bf0]"
                   style={{ width: `${(item.count / max) * 100}%` }}
                 />
               </div>
@@ -220,31 +224,27 @@ export function UpdatesLineChart({ data }: UpdatesLineProps) {
   );
 }
 
-interface StatusBarsProps {
-  counts: Record<TrailerStatus, number>;
-}
-
-export function StatusBarChart({ counts }: StatusBarsProps) {
-  const entries = (Object.keys(counts) as TrailerStatus[]).map((status) => ({
-    status,
-    label: STATUS_LABELS[status],
-    count: counts[status],
-    color: STATUS_COLORS[status],
+export function StatusBarChart({ counts }: FleetStatusChartProps) {
+  const entries = FLEET_BUCKETS.map((bucket) => ({
+    bucket,
+    label: FLEET_CHART_LABELS[bucket],
+    count: counts[bucket],
+    color: FLEET_CHART_COLORS[bucket],
   }));
   const max = Math.max(...entries.map((e) => e.count), 1);
 
   return (
     <PanelCard title="Trailer status overview" bodyClassName="p-4">
-      <div className="flex h-36 items-end justify-between gap-3">
+      <div className="flex h-36 items-end justify-between gap-2">
         {entries.map((item) => (
           <div
-            key={item.status}
+            key={item.bucket}
             className="flex min-w-0 flex-1 flex-col items-center gap-2"
           >
             <span className="text-xs tabular-nums text-white">{item.count}</span>
             <div className="flex w-full flex-1 items-end">
               <div
-                className="w-full rounded-t-sm"
+                className="w-full rounded-none"
                 style={{
                   height: `${(item.count / max) * 100}%`,
                   minHeight: item.count > 0 ? "8px" : "0",

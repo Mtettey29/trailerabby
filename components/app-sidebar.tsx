@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { SectionNavLink } from "@/components/section-nav-link";
+import { useAppUser } from "@/components/auth-provider";
 import { collapseNavItem, navItems, type SidebarNavItem } from "@/components/app-shared";
+import { filterNavForRole } from "@/lib/permissions";
 import { parseFleetStatusParam } from "@/lib/trailer-display";
 import {
   Sidebar,
@@ -79,6 +81,9 @@ function CollapseButton() {
 }
 
 export function AppSidebar() {
+  const { user } = useAppUser();
+  const visibleNav = user ? filterNavForRole(navItems, user.role) : navItems;
+
   return (
     <Sidebar
       className="border-r border-[#2f3336] *:data-[slot=sidebar-inner]:bg-black"
@@ -96,7 +101,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup className="flex h-full min-h-0 flex-col px-1.5 py-2">
           <SidebarMenu className="flex min-h-0 flex-1 flex-col">
-            {navItems.map((item) => (
+            {visibleNav.map((item) => (
               <NavItem key={item.title} item={item} />
             ))}
             <CollapseButton />

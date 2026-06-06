@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { useCanMutate } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { TrailerFiltersBar } from "@/components/trailer-filters-bar";
 import { TrailerFleetSummary } from "@/components/trailer-fleet-summary";
@@ -26,7 +27,9 @@ import { Button } from "@/components/ui/button";
 const POLL_INTERVAL_MS = 30_000;
 
 export function TrailersPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const canEdit = useCanMutate();
   const [trailers, setTrailers] = useState<Trailer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,15 +158,17 @@ export function TrailersPage() {
         subtitle="View and manage all trailers."
       />
 
-      <div className="mt-4 flex justify-end print:hidden">
-        <Button
-          className="rounded-none bg-white font-bold text-black hover:bg-[#e7e9ea]"
-          onClick={openAdd}
-        >
-          <Plus className="text-black" strokeWidth={2} />
-          Add trailer
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="mt-4 flex justify-end print:hidden">
+          <Button
+            className="rounded-none bg-white font-bold text-black hover:bg-[#e7e9ea]"
+            onClick={openAdd}
+          >
+            <Plus className="text-black" strokeWidth={2} />
+            Add trailer
+          </Button>
+        </div>
+      )}
 
       {error && (
         <Alert
@@ -202,26 +207,32 @@ export function TrailersPage() {
               trailers={trailers}
               filters={filters}
               onFiltersChange={setFilters}
-              onSelectTrailer={openEdit}
+              onSelectTrailer={(trailer) =>
+                router.push(`/trailers/${trailer.id}`)
+              }
             />
           </div>
 
           <TrailersPageTable
             trailers={filteredTrailers}
+            onView={(trailer) => router.push(`/trailers/${trailer.id}`)}
             onEdit={openEdit}
+            readOnly={!canEdit}
           />
         </>
       )}
 
-      <TrailerModal
-        open={modalOpen}
-        trailer={editing}
-        defaultStatus={addDefaultStatus}
-        saving={saving}
-        onClose={closeModal}
-        onSave={handleSave}
-        onDelete={editing ? handleDelete : undefined}
-      />
+      {canEdit && (
+        <TrailerModal
+          open={modalOpen}
+          trailer={editing}
+          defaultStatus={addDefaultStatus}
+          saving={saving}
+          onClose={closeModal}
+          onSave={handleSave}
+          onDelete={editing ? handleDelete : undefined}
+        />
+      )}
     </div>
   );
 }

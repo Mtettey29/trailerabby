@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -23,7 +24,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} min-h-screen bg-black font-sans text-[#e7e9ea] antialiased`}
       >
-        <TooltipProvider>{children}</TooltipProvider>
+        <ClerkProvider
+          appearance={{
+            variables: {
+              colorBackground: "#000000",
+              colorText: "#e7e9ea",
+              colorPrimary: "#1d9bf0",
+              borderRadius: "0px",
+            },
+          }}
+        >
+          <TooltipProvider>{children}</TooltipProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

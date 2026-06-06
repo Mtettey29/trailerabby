@@ -1,0 +1,8 @@
+{
+  "sign_in": {
+    "url": "/sign-in"
+  },
+  "user_profile": {
+    "url": "/"
+  }
+}

@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { MovementFiltersBar } from "@/components/movement-filters";
 import { MovementsPageTable } from "@/components/movements-page-table";
+import { useCanMutate } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { TrailerModal, type TrailerFormData } from "@/components/TrailerModal";
 import type { Trailer } from "@/lib/types";
@@ -26,7 +27,9 @@ import { Button } from "@/components/ui/button";
 const POLL_INTERVAL_MS = 30_000;
 
 export function MovementsPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const canEdit = useCanMutate();
   const [trailers, setTrailers] = useState<Trailer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -150,24 +153,32 @@ export function MovementsPage() {
               filters={filters}
               locations={allLocations}
               onFiltersChange={setFilters}
-              onSelectTrailer={openEdit}
+              onSelectTrailer={
+                canEdit
+                  ? openEdit
+                  : (trailer) => router.push(`/trailers/${trailer.id}`)
+              }
             />
           </div>
           <MovementsPageTable
             trailers={filteredTrailers}
+            onView={(trailer) => router.push(`/trailers/${trailer.id}`)}
             onEdit={openEdit}
+            readOnly={!canEdit}
           />
         </>
       )}
 
-      <TrailerModal
-        open={modalOpen}
-        trailer={editing}
-        saving={saving}
-        onClose={closeModal}
-        onSave={handleSave}
-        onDelete={undefined}
-      />
+      {canEdit && (
+        <TrailerModal
+          open={modalOpen}
+          trailer={editing}
+          saving={saving}
+          onClose={closeModal}
+          onSave={handleSave}
+          onDelete={undefined}
+        />
+      )}
     </div>
   );
 }

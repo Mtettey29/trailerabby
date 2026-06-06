@@ -50,7 +50,11 @@ export function TrailerSection({
         </div>
       </div>
       <div className="overflow-hidden rounded-none border border-[#2f3336] bg-black">
-        <TrailerTable trailers={sectionTrailers} onEdit={onEdit} />
+        <TrailerTable
+          trailers={sectionTrailers}
+          onEdit={onEdit}
+          readOnly={!onAdd}
+        />
         {onAdd && (
           <div className="border-t border-[#2f3336] p-2 print:hidden">
             <Button

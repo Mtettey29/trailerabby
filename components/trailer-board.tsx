@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { DashboardMovementsPreview } from "@/components/dashboard-movements-preview";
 import {
@@ -22,8 +22,8 @@ import {
   DEFAULT_MOVEMENT_FILTERS,
   type MovementPageFilters,
 } from "@/lib/movements";
+import { fleetChartCounts } from "@/lib/trailer-display";
 import {
-  countByStatus,
   sortByUpdatedDesc,
   topLocations,
   updatesByDay,
@@ -34,12 +34,15 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { useCanMutate } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 
 const POLL_INTERVAL_MS = 30_000;
 
 export function TrailerBoard() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const canEdit = useCanMutate();
   const [trailers, setTrailers] = useState<Trailer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +69,7 @@ export function TrailerBoard() {
   );
 
   const allLocations = useMemo(() => uniqueLocations(trailers), [trailers]);
-  const statusCounts = useMemo(() => countByStatus(trailers), [trailers]);
+  const fleetCounts = useMemo(() => fleetChartCounts(trailers), [trailers]);
   const locationCounts = useMemo(() => topLocations(trailers), [trailers]);
   const dailyUpdates = useMemo(() => updatesByDay(trailers), [trailers]);
 
@@ -218,42 +221,51 @@ export function TrailerBoard() {
             filters={filters}
             locations={allLocations}
             onFiltersChange={setFilters}
-            onSelectTrailer={openEdit}
+            onSelectTrailer={
+              canEdit
+                ? openEdit
+                : (trailer) => router.push(`/trailers/${trailer.id}`)
+            }
           />
 
           <div className="grid gap-6 xl:grid-cols-3">
             <div className="xl:col-span-2">
               <DashboardMovementsPreview
                 trailers={filteredTrailers}
+                onView={(trailer) => router.push(`/trailers/${trailer.id}`)}
                 onEdit={openEdit}
+                readOnly={!canEdit}
               />
             </div>
             <div id="analytics" className="flex flex-col gap-6">
-              <StatusDonutChart counts={statusCounts} />
+              <StatusDonutChart counts={fleetCounts} />
               <LocationBarChart locations={locationCounts} />
             </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
             <UpdatesLineChart data={dailyUpdates} />
-            <StatusBarChart counts={statusCounts} />
+            <StatusBarChart counts={fleetCounts} />
             <QuickActions
               onAddTrailer={() => openAdd()}
               onGenerateReport={() => window.print()}
+              readOnly={!canEdit}
             />
           </div>
         </>
       )}
 
-      <TrailerModal
-        open={modalOpen}
-        trailer={editing}
-        defaultStatus={addDefaultStatus}
-        saving={saving}
-        onClose={closeModal}
-        onSave={handleSave}
-        onDelete={editing ? handleDelete : undefined}
-      />
+      {canEdit && (
+        <TrailerModal
+          open={modalOpen}
+          trailer={editing}
+          defaultStatus={addDefaultStatus}
+          saving={saving}
+          onClose={closeModal}
+          onSave={handleSave}
+          onDelete={editing ? handleDelete : undefined}
+        />
+      )}
     </div>
   );
 }

@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireApiUser } from "@/lib/api-auth";
 import { createTrailer, listTrailers } from "@/lib/trailers";
 import type { TrailerInput } from "@/lib/types";
 
 export async function GET() {
+  const authResult = await requireApiUser();
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const trailers = await listTrailers();
     return NextResponse.json({ trailers });
@@ -16,6 +20,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const authResult = await requireApiUser({ write: true });
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const body = (await request.json()) as TrailerInput;
     const trailer = await createTrailer(body);

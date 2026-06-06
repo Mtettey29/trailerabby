@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LocationAddressSearch } from "@/components/location-address-search";
 
 export interface LocationFormData {
   name: string;
@@ -226,6 +227,11 @@ export function LocationModal({
                 />
               </div>
             </div>
+
+            <LocationAddressSearch
+              form={form}
+              onApply={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+            />
 
             <div className="grid gap-2">
               <Label htmlFor="loc-name" className="text-[#e7e9ea]">

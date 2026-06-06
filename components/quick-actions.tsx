@@ -13,34 +13,48 @@ import { Button } from "@/components/ui/button";
 interface QuickActionsProps {
   onAddTrailer: () => void;
   onGenerateReport: () => void;
+  readOnly?: boolean;
 }
 
 export function QuickActions({
   onAddTrailer,
   onGenerateReport,
+  readOnly = false,
 }: QuickActionsProps) {
-  const actions = [
-    {
-      label: "Add movement",
-      icon: ArrowLeftRight,
-      href: "/movements",
-    },
-    {
-      label: "Add trailer",
-      icon: Plus,
-      onClick: onAddTrailer,
-    },
-    {
-      label: "Add location",
-      icon: MapPin,
-      disabled: true,
-    },
-    {
-      label: "Generate report",
-      icon: FileText,
-      onClick: onGenerateReport,
-    },
-  ] as const;
+  type ActionItem =
+    | { label: string; icon: typeof Plus; href: string }
+    | { label: string; icon: typeof Plus; onClick: () => void };
+
+  const actions: ActionItem[] = readOnly
+    ? [
+        {
+          label: "Generate report",
+          icon: FileText,
+          onClick: onGenerateReport,
+        },
+      ]
+    : [
+        {
+          label: "Add movement",
+          icon: ArrowLeftRight,
+          href: "/movements",
+        },
+        {
+          label: "Add trailer",
+          icon: Plus,
+          onClick: onAddTrailer,
+        },
+        {
+          label: "Add location",
+          icon: MapPin,
+          href: "/locations",
+        },
+        {
+          label: "Generate report",
+          icon: FileText,
+          onClick: onGenerateReport,
+        },
+      ];
 
   return (
     <PanelCard title="Quick actions" bodyClassName="p-4">
@@ -70,7 +84,6 @@ export function QuickActions({
               variant="outline"
               className={className}
               onClick={"onClick" in rest ? rest.onClick : undefined}
-              disabled={"disabled" in rest ? rest.disabled : false}
             >
               <Icon className="text-white" strokeWidth={1.75} />
               {label}

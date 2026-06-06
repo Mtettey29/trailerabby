@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireApiUser } from "@/lib/api-auth";
 import { createLocation, listLocations } from "@/lib/locations";
 import type { LocationInput } from "@/lib/types";
 
 export async function GET() {
+  const authResult = await requireApiUser();
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const locations = await listLocations();
     return NextResponse.json({ locations });
@@ -16,6 +20,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const authResult = await requireApiUser({ staff: true, write: true });
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const body = (await request.json()) as LocationInput;
     const location = await createLocation(body);

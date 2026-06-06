@@ -1,5 +1,7 @@
 import { Suspense, type CSSProperties } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AuthProvider } from "@/components/auth-provider";
+import { RoleGate } from "@/components/role-gate";
 import {
   SidebarInset,
   SidebarProvider,
@@ -8,6 +10,8 @@ import {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
+    <AuthProvider>
+    <RoleGate>
     <SidebarProvider
       style={
         {
@@ -30,5 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </SidebarInset>
       </div>
     </SidebarProvider>
+    </RoleGate>
+    </AuthProvider>
   );
 }

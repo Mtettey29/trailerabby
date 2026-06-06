@@ -45,6 +45,13 @@ export function getFleetDisplayStatus(trailer: Trailer): FleetDisplayStatus {
 }
 
 export function deriveTrailerType(trailer: Trailer): TrailerType {
+  const description = `${trailer.description} ${trailer.notes}`.toLowerCase();
+  if (description.includes("reefer")) return "Reefer";
+  if (description.includes("flatbed") || description.includes("flat")) {
+    return "Flatbed";
+  }
+  if (description.includes("tank")) return "Tanker";
+
   const notes = trailer.notes.toLowerCase();
   const typeMatch = notes.match(/type:\s*(\w+)/i);
   if (typeMatch) {
@@ -60,6 +67,16 @@ export function deriveTrailerType(trailer: Trailer): TrailerType {
   if (num.startsWith("GT")) return "Flatbed";
   if (num.startsWith("HT")) return "Dry Van";
   return "Dry Van";
+}
+
+export function formatTrailerTypeLabel(trailer: Trailer): string {
+  const type = deriveTrailerType(trailer);
+  const description = trailer.description.trim();
+  if (description) return description;
+  if (type === "Dry Van") return "Dry Van 53'";
+  if (type === "Reefer") return "Reefer 53'";
+  if (type === "Flatbed") return "Flatbed 48'";
+  return type;
 }
 
 export function formatLastMovement(trailer: Trailer): string {
@@ -204,3 +221,45 @@ export const FLEET_STATUS_CLASS: Record<FleetDisplayStatus, string> = {
   out_of_service:
     "border border-[#71767b]/30 bg-[#71767b]/15 text-[#71767b]",
 };
+
+export type FleetChartBucket =
+  | "in_transit"
+  | "at_location"
+  | "under_maintenance"
+  | "other";
+
+export const FLEET_CHART_LABELS: Record<FleetChartBucket, string> = {
+  in_transit: "In Transit",
+  at_location: "At Location",
+  under_maintenance: "Under Maintenance",
+  other: "Other",
+};
+
+export const FLEET_CHART_COLORS: Record<FleetChartBucket, string> = {
+  in_transit: "#1d9bf0",
+  at_location: "#00ba7c",
+  under_maintenance: "#ffad1f",
+  other: "#71767b",
+};
+
+export function fleetChartCounts(
+  trailers: Trailer[]
+): Record<FleetChartBucket, number> {
+  const counts: Record<FleetChartBucket, number> = {
+    in_transit: 0,
+    at_location: 0,
+    under_maintenance: 0,
+    other: 0,
+  };
+
+  for (const trailer of trailers) {
+    const status = getFleetDisplayStatus(trailer);
+    if (status === "out_of_service") {
+      counts.other += 1;
+    } else {
+      counts[status] += 1;
+    }
+  }
+
+  return counts;
+}

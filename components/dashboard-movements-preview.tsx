@@ -1,7 +1,12 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { MoreHorizontal } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+} from "lucide-react";
 import {
   MovementStatusBadge,
   MovementTypeBadge,
@@ -24,20 +29,53 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const PREVIEW_SIZE = 5;
+const PAGE_SIZE = 5;
 
 interface DashboardMovementsPreviewProps {
   trailers: Trailer[];
+  onView: (trailer: Trailer) => void;
   onEdit: (trailer: Trailer) => void;
+  readOnly?: boolean;
 }
 
 export function DashboardMovementsPreview({
   trailers,
+  onView,
   onEdit,
+  readOnly = false,
 }: DashboardMovementsPreviewProps) {
-  const preview = trailers.slice(0, PREVIEW_SIZE);
-  const total = trailers.length;
-  const rangeEnd = Math.min(PREVIEW_SIZE, total);
+  const colCount = readOnly ? 7 : 8;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(trailers.length / PAGE_SIZE));
+  const firstTrailerId = trailers[0]?.id;
+
+  useEffect(() => {
+    setPage(1);
+  }, [trailers.length, firstTrailerId]);
+
+  const pageTrailers = useMemo(() => {
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * PAGE_SIZE;
+    return trailers.slice(start, start + PAGE_SIZE);
+  }, [trailers, page, totalPages]);
+
+  const rangeStart = trailers.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, trailers.length);
+
+  function goToPage(next: number) {
+    setPage(Math.min(Math.max(1, next), totalPages));
+  }
+
+  const pageWindow = useMemo(() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (page <= 3) return [1, 2, 3];
+    if (page >= totalPages - 2) {
+      return [totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [page - 1, page, page + 1];
+  }, [page, totalPages]);
 
   return (
     <PanelCard
@@ -77,21 +115,21 @@ export function DashboardMovementsPreview({
             <TableHead className="px-4 text-xs font-normal text-[#71767b]">
               Status
             </TableHead>
-            <TableHead className="w-12 px-4" />
+            {!readOnly && <TableHead className="w-12 px-4" />}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {preview.length === 0 ? (
+          {pageTrailers.length === 0 ? (
             <TableRow className="border-[#2f3336] hover:bg-transparent">
               <TableCell
-                colSpan={8}
+                colSpan={colCount}
                 className="px-4 py-12 text-center text-sm text-[#71767b]"
               >
                 No movements match your filters.
               </TableCell>
             </TableRow>
           ) : (
-            preview.map((trailer) => {
+            pageTrailers.map((trailer) => {
               const movementType = deriveMovementType(trailer);
               const { from, to } = movementFromLocation(trailer);
 
@@ -99,7 +137,7 @@ export function DashboardMovementsPreview({
                 <TableRow
                   key={trailer.id}
                   className="cursor-pointer border-[#2f3336] hover:bg-[#080808]"
-                  onClick={() => onEdit(trailer)}
+                  onClick={() => onView(trailer)}
                 >
                   <TableCell className="whitespace-nowrap px-4 text-sm text-[#e7e9ea]">
                     {formatFullTimestamp(trailer.updatedAt)}
@@ -122,20 +160,22 @@ export function DashboardMovementsPreview({
                   <TableCell className="px-4">
                     <MovementStatusBadge status={trailer.status} />
                   </TableCell>
-                  <TableCell className="px-4">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-[#71767b] hover:bg-[#16181c] hover:text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(trailer);
-                      }}
-                      aria-label={`Actions for ${trailer.trailerNumber}`}
-                    >
-                      <MoreHorizontal strokeWidth={1.75} />
-                    </Button>
-                  </TableCell>
+                  {!readOnly && (
+                    <TableCell className="px-4">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-[#71767b] hover:bg-[#16181c] hover:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(trailer);
+                        }}
+                        aria-label={`Actions for ${trailer.trailerNumber}`}
+                      >
+                        <MoreHorizontal strokeWidth={1.75} />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })
@@ -143,8 +183,80 @@ export function DashboardMovementsPreview({
         </TableBody>
       </Table>
 
-      <div className="border-t border-[#2f3336] px-4 py-3 text-xs text-[#71767b]">
-        Showing 1 to {rangeEnd} of {total} movements
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#2f3336] px-4 py-3 text-xs text-[#71767b]">
+        <span>
+          Showing {rangeStart} to {rangeEnd} of {trailers.length} movements
+        </span>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            className="rounded-none border-[#2f3336] text-white hover:bg-[#16181c]"
+            disabled={page <= 1}
+            onClick={() => goToPage(page - 1)}
+            aria-label="Previous page"
+          >
+            <ChevronLeft strokeWidth={1.75} />
+          </Button>
+          {pageWindow[0] > 1 && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-w-8 rounded-none border-[#2f3336] text-white hover:bg-[#16181c]"
+                onClick={() => goToPage(1)}
+              >
+                1
+              </Button>
+              {pageWindow[0] > 2 && <span className="px-1">…</span>}
+            </>
+          )}
+          {pageWindow.map((pageNum) => (
+            <Button
+              key={pageNum}
+              type="button"
+              variant="outline"
+              size="sm"
+              className={`min-w-8 rounded-none border-[#2f3336] px-2 tabular-nums ${
+                pageNum === page
+                  ? "border-[#1d9bf0] bg-[#1d9bf0]/10 text-[#1d9bf0]"
+                  : "text-white hover:bg-[#16181c]"
+              }`}
+              onClick={() => goToPage(pageNum)}
+            >
+              {pageNum}
+            </Button>
+          ))}
+          {pageWindow[pageWindow.length - 1] < totalPages && (
+            <>
+              {pageWindow[pageWindow.length - 1] < totalPages - 1 && (
+                <span className="px-1">…</span>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-w-8 rounded-none border-[#2f3336] text-white hover:bg-[#16181c]"
+                onClick={() => goToPage(totalPages)}
+              >
+                {totalPages}
+              </Button>
+            </>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            className="rounded-none border-[#2f3336] text-white hover:bg-[#16181c]"
+            disabled={page >= totalPages}
+            onClick={() => goToPage(page + 1)}
+            aria-label="Next page"
+          >
+            <ChevronRight strokeWidth={1.75} />
+          </Button>
+        </div>
       </div>
     </PanelCard>
   );

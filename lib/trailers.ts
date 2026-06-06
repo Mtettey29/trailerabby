@@ -2,6 +2,7 @@ import { Redis } from "@upstash/redis";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { normalizeTrailerAsset } from "./trailer-assets";
 import type { Trailer, TrailerInput, TrailerUpdate } from "./types";
 import { TRAILER_STATUSES } from "./types";
 
@@ -32,7 +33,9 @@ async function readLocalTrailers(): Promise<Trailer[]> {
   try {
     const raw = await readFile(LOCAL_DATA_PATH, "utf-8");
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as Trailer[]) : [];
+    return Array.isArray(parsed)
+      ? (parsed as Trailer[]).map(normalizeTrailerAsset)
+      : [];
   } catch {
     return [];
   }
@@ -47,7 +50,7 @@ async function readAll(): Promise<Trailer[]> {
   if (redisConfigured()) {
     const redis = getRedis();
     const data = await redis.get<Trailer[]>(KV_KEY);
-    return data ?? [];
+    return (data ?? []).map(normalizeTrailerAsset);
   }
   return readLocalTrailers();
 }
@@ -68,6 +71,11 @@ export async function listTrailers(): Promise<Trailer[]> {
   );
 }
 
+export async function getTrailer(id: string): Promise<Trailer | null> {
+  const trailers = await readAll();
+  return trailers.find((trailer) => trailer.id === id) ?? null;
+}
+
 export async function createTrailer(input: TrailerInput): Promise<Trailer> {
   if (!input.trailerNumber?.trim()) {
     throw new Error("Trailer number is required");
@@ -76,7 +84,7 @@ export async function createTrailer(input: TrailerInput): Promise<Trailer> {
     throw new Error("Invalid status");
   }
 
-  const trailer: Trailer = {
+  const trailer: Trailer = normalizeTrailerAsset({
     id: randomUUID(),
     trailerNumber: input.trailerNumber.trim(),
     status: input.status,
@@ -84,7 +92,7 @@ export async function createTrailer(input: TrailerInput): Promise<Trailer> {
     location: input.location?.trim() ?? "",
     notes: input.notes?.trim() ?? "",
     updatedAt: new Date().toISOString(),
-  };
+  });
 
   const trailers = await readAll();
   trailers.push(trailer);
@@ -107,7 +115,7 @@ export async function updateTrailer(
     throw new Error("Invalid status");
   }
 
-  const updated: Trailer = {
+  const updated: Trailer = normalizeTrailerAsset({
     ...current,
     ...(input.trailerNumber !== undefined && {
       trailerNumber: input.trailerNumber.trim(),
@@ -117,7 +125,7 @@ export async function updateTrailer(
     ...(input.location !== undefined && { location: input.location.trim() }),
     ...(input.notes !== undefined && { notes: input.notes.trim() }),
     updatedAt: new Date().toISOString(),
-  };
+  });
 
   trailers[index] = updated;
   await writeAll(trailers);

@@ -1,10 +1,34 @@
 import { NextResponse } from "next/server";
-import { deleteTrailer, updateTrailer } from "@/lib/trailers";
+import { requireApiUser } from "@/lib/api-auth";
+import { deleteTrailer, getTrailer, updateTrailer } from "@/lib/trailers";
 import type { TrailerUpdate } from "@/lib/types";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
+export async function GET(_request: Request, context: RouteContext) {
+  const authResult = await requireApiUser();
+  if (authResult instanceof NextResponse) return authResult;
+
+  try {
+    const { id } = await context.params;
+    const trailer = await getTrailer(id);
+    if (!trailer) {
+      return NextResponse.json({ error: "Trailer not found" }, { status: 404 });
+    }
+    return NextResponse.json({ trailer });
+  } catch (error) {
+    console.error("GET /api/trailers/[id]", error);
+    return NextResponse.json(
+      { error: "Failed to load trailer" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(request: Request, context: RouteContext) {
+  const authResult = await requireApiUser({ write: true });
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const { id } = await context.params;
     const body = (await request.json()) as TrailerUpdate;
@@ -24,6 +48,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
+  const authResult = await requireApiUser({ write: true });
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const { id } = await context.params;
     await deleteTrailer(id);

@@ -35,13 +35,18 @@ type SortDir = "asc" | "desc";
 
 interface MovementsPageTableProps {
   trailers: Trailer[];
+  onView: (trailer: Trailer) => void;
   onEdit: (trailer: Trailer) => void;
+  readOnly?: boolean;
 }
 
 export function MovementsPageTable({
   trailers,
+  onView,
   onEdit,
+  readOnly = false,
 }: MovementsPageTableProps) {
+  const colCount = readOnly ? 7 : 8;
   const [page, setPage] = useState(1);
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -114,14 +119,14 @@ export function MovementsPageTable({
             <TableHead className="px-4 text-xs font-normal text-[#71767b]">
               Status
             </TableHead>
-            <TableHead className="w-12 px-4" />
+            {!readOnly && <TableHead className="w-12 px-4" />}
           </TableRow>
         </TableHeader>
         <TableBody>
           {pageTrailers.length === 0 ? (
             <TableRow className="border-[#2f3336] hover:bg-transparent">
               <TableCell
-                colSpan={8}
+                colSpan={colCount}
                 className="px-4 py-16 text-center text-sm text-[#71767b]"
               >
                 No movements match your filters.
@@ -136,7 +141,7 @@ export function MovementsPageTable({
                 <TableRow
                   key={trailer.id}
                   className="cursor-pointer border-[#2f3336] hover:bg-[#080808]"
-                  onClick={() => onEdit(trailer)}
+                  onClick={() => onView(trailer)}
                 >
                   <TableCell className="whitespace-nowrap px-4 text-sm text-[#e7e9ea]">
                     {formatFullTimestamp(trailer.updatedAt)}
@@ -159,20 +164,22 @@ export function MovementsPageTable({
                   <TableCell className="px-4">
                     <MovementStatusBadge status={trailer.status} />
                   </TableCell>
-                  <TableCell className="px-4">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-[#71767b] hover:bg-[#16181c] hover:text-white"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(trailer);
-                      }}
-                      aria-label={`Actions for ${trailer.trailerNumber}`}
-                    >
-                      <MoreHorizontal strokeWidth={1.75} />
-                    </Button>
-                  </TableCell>
+                  {!readOnly && (
+                    <TableCell className="px-4">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-[#71767b] hover:bg-[#16181c] hover:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(trailer);
+                        }}
+                        aria-label={`Actions for ${trailer.trailerNumber}`}
+                      >
+                        <MoreHorizontal strokeWidth={1.75} />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               );
             })

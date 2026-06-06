@@ -16,6 +16,7 @@ import {
 interface TrailerTableProps {
   trailers: Trailer[];
   onEdit: (trailer: Trailer) => void;
+  readOnly?: boolean;
 }
 
 function HeaderIcon({ icon: Icon, label }: { icon: typeof User; label: string }) {
@@ -27,7 +28,12 @@ function HeaderIcon({ icon: Icon, label }: { icon: typeof User; label: string })
   );
 }
 
-export function TrailerTable({ trailers, onEdit }: TrailerTableProps) {
+export function TrailerTable({
+  trailers,
+  onEdit,
+  readOnly = false,
+}: TrailerTableProps) {
+  const colCount = readOnly ? 6 : 7;
   return (
     <Table className="w-full rounded-none">
       <TableHeader>
@@ -50,14 +56,14 @@ export function TrailerTable({ trailers, onEdit }: TrailerTableProps) {
           <TableHead className="w-[120px] px-4">
             <HeaderIcon icon={Clock} label="Updated" />
           </TableHead>
-          <TableHead className="w-12 px-4" />
+          {!readOnly && <TableHead className="w-12 px-4" />}
         </TableRow>
       </TableHeader>
       <TableBody>
         {trailers.length === 0 ? (
           <TableRow className="border-[#2f3336] hover:bg-transparent">
             <TableCell
-              colSpan={7}
+              colSpan={colCount}
               className="px-4 py-10 text-center text-sm text-[#71767b]"
             >
               No trailers in this category.
@@ -68,8 +74,10 @@ export function TrailerTable({ trailers, onEdit }: TrailerTableProps) {
             return (
               <TableRow
                 key={trailer.id}
-                className="cursor-pointer border-[#2f3336] hover:bg-[#080808]"
-                onClick={() => onEdit(trailer)}
+                className={`border-[#2f3336] hover:bg-[#080808] ${
+                  readOnly ? "" : "cursor-pointer"
+                }`}
+                onClick={readOnly ? undefined : () => onEdit(trailer)}
               >
                 <TableCell className="px-4 font-mono text-sm font-medium text-white">
                   {trailer.trailerNumber}
@@ -92,20 +100,22 @@ export function TrailerTable({ trailers, onEdit }: TrailerTableProps) {
                 >
                   {formatRelativeTime(trailer.updatedAt)}
                 </TableCell>
-                <TableCell className="px-4">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-white hover:bg-[#16181c] hover:text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(trailer);
-                    }}
-                    aria-label={`Edit ${trailer.trailerNumber}`}
-                  >
-                    <Pencil className="text-white" strokeWidth={1.75} />
-                  </Button>
-                </TableCell>
+                {!readOnly && (
+                  <TableCell className="px-4">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-white hover:bg-[#16181c] hover:text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(trailer);
+                      }}
+                      aria-label={`Edit ${trailer.trailerNumber}`}
+                    >
+                      <Pencil className="text-white" strokeWidth={1.75} />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             );
           })
