@@ -6,7 +6,9 @@ import sharp from "sharp";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const SOURCE_URL =
-  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_transparent.gif";
+  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_animated.gif";
+const BRAND_DIR = path.join(ROOT, "public", "brand");
+const LOGO_PATH = path.join(BRAND_DIR, "logo.gif");
 const OUT_DIR = path.join(ROOT, "public", "icons");
 const APP_DIR = path.join(ROOT, "app");
 
@@ -18,6 +20,19 @@ async function downloadSource() {
     throw new Error(`Failed to download logo: ${res.status} ${res.statusText}`);
   }
   return Buffer.from(await res.arrayBuffer());
+}
+
+async function invertAnimatedLogo(source) {
+  await mkdir(BRAND_DIR, { recursive: true });
+
+  const inverted = await sharp(source, { animated: true })
+    .negate({ alpha: false })
+    .gif()
+    .toBuffer();
+
+  await writeFile(LOGO_PATH, inverted);
+  console.log("  public/brand/logo.gif (inverted animated logo)");
+  return inverted;
 }
 
 /** Crop to the bold "ABBY" center band for legibility at small sizes. */
@@ -42,6 +57,7 @@ async function cropToAbbyMark(input) {
       width: cropWidth,
       height: cropHeight,
     })
+    .negate({ alpha: false })
     .png()
     .toBuffer();
 }
@@ -60,8 +76,11 @@ async function main() {
   console.log("Downloading source logo…");
   const source = await downloadSource();
 
-  console.log("Cropping to ABBY mark…");
-  const cropped = await cropToAbbyMark(source);
+  console.log("Inverting colors (black ↔ white)…");
+  const inverted = await invertAnimatedLogo(source);
+
+  console.log("Cropping inverted ABBY mark for favicons…");
+  const cropped = await cropToAbbyMark(inverted);
 
   await mkdir(OUT_DIR, { recursive: true });
 

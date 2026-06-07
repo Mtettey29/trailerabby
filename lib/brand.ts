@@ -1,5 +1,9 @@
-export const BRAND_LOGO_URL =
-  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_transparent.gif";
+/** Remote source — run `npm run icons:generate` to refresh inverted assets */
+export const BRAND_LOGO_SOURCE_URL =
+  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_animated.gif";
+
+/** Inverted logo for dark UI — generated to public/brand/logo.gif */
+export const BRAND_LOGO_URL = "/brand/logo.gif";
 
 export const BRAND_NAME = "Little Abby Trucking";
 
