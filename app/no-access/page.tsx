@@ -9,7 +9,7 @@ export default function NoAccessPage() {
         Your account signed in successfully, but it is not on the Trailer Abby
         dispatch roster. Contact an administrator if you need access.
       </p>
-      <SignOutButton>
+      <SignOutButton redirectUrl="/sign-in">
         <Button
           type="button"
           className="mt-8 rounded-none bg-[#1d9bf0] text-white hover:bg-[#1a8cd8]"

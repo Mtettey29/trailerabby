@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { KeyRound, Pencil, UserX, X } from "lucide-react";
+import { UserProfile } from "@clerk/nextjs";
+import { KeyRound, Loader2, Pencil, UserX, X } from "lucide-react";
 import { UserRoleBadge, UserStatusBadge } from "@/components/user-badges";
-import type { AppUser } from "@/lib/types";
+import { UserAvatar } from "@/components/user-avatar";
+import { UserClerkBadge } from "@/components/user-clerk-badge";
+import type { AppUserView } from "@/lib/types";
 import { USER_ROLE_LABELS } from "@/lib/types";
 import {
   formatJoinedDate,
   formatUserLastLogin,
-  getUserInitials,
 } from "@/lib/user-display";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,10 +25,13 @@ const PANEL_TABS = [
 type PanelTabId = (typeof PANEL_TABS)[number]["id"];
 
 interface UserDetailPanelProps {
-  user: AppUser;
+  user: AppUserView;
+  isSelf?: boolean;
+  inviting?: boolean;
   onClose: () => void;
   onEdit: () => void;
   onDeactivate: () => void;
+  onInviteClerk?: () => void;
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -40,27 +45,35 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export function UserDetailPanel({
   user,
+  isSelf = false,
+  inviting = false,
   onClose,
   onEdit,
   onDeactivate,
+  onInviteClerk,
 }: UserDetailPanelProps) {
-  const [tab, setTab] = useState<PanelTabId>("profile");
+  const [tab, setTab] = useState<PanelTabId>(isSelf ? "profile" : "profile");
+  const lastLogin = user.clerkLastSignInAt ?? user.lastLoginAt;
 
   return (
     <aside className="flex w-full shrink-0 flex-col border border-[#2f3336] bg-black lg:w-80 xl:w-96">
       <div className="border-b border-[#2f3336] p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-none border border-[#2f3336] bg-[#16181c] text-sm font-medium text-white">
-              {getUserInitials(user.name)}
-            </span>
+            <UserAvatar name={user.name} imageUrl={user.imageUrl} size="md" />
             <div className="min-w-0">
               <h2 className="truncate text-base font-medium text-white">
                 {user.name}
+                {isSelf && (
+                  <span className="ml-2 text-xs font-normal text-[#71767b]">
+                    (you)
+                  </span>
+                )}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <UserStatusBadge status={user.status} />
                 <UserRoleBadge role={user.role} />
+                <UserClerkBadge status={user.clerkStatus} />
               </div>
             </div>
           </div>
@@ -98,6 +111,30 @@ export function UserDetailPanel({
       <div className="flex-1 overflow-y-auto p-4">
         {tab === "profile" && (
           <div className="space-y-4">
+            {isSelf && (
+              <div className="border border-[#2f3336] bg-[#080808] p-2">
+                <p className="mb-2 text-xs text-[#71767b]">
+                  Clerk account settings (password, email, profile photo)
+                </p>
+                <UserProfile
+                  appearance={{
+                    variables: {
+                      colorBackground: "#000000",
+                      colorText: "#e7e9ea",
+                      colorPrimary: "#1d9bf0",
+                      borderRadius: "0px",
+                    },
+                    elements: {
+                      rootBox: "w-full",
+                      card: "rounded-none border-0 shadow-none bg-transparent",
+                      navbar: "hidden",
+                      pageScrollBox: "p-0",
+                    },
+                  }}
+                />
+              </div>
+            )}
+
             <DetailRow label="Email" value={user.email} />
             <DetailRow label="Phone" value={user.phone} />
             <DetailRow label="Role" value={USER_ROLE_LABELS[user.role]} />
@@ -107,9 +144,12 @@ export function UserDetailPanel({
             />
             <DetailRow label="Joined" value={formatJoinedDate(user.joinedAt)} />
             <DetailRow
-              label="Last Login"
-              value={formatUserLastLogin(user.lastLoginAt)}
+              label="Last sign-in"
+              value={formatUserLastLogin(lastLogin)}
             />
+            {user.clerkUserId && (
+              <DetailRow label="Clerk ID" value={user.clerkUserId} />
+            )}
 
             <div>
               <p className="mb-2 text-sm text-[#71767b]">Location Access</p>
@@ -143,7 +183,8 @@ export function UserDetailPanel({
             <p>
               Role-based access for{" "}
               <span className="text-white">{USER_ROLE_LABELS[user.role]}</span>
-              .
+              . Clerk handles sign-in; this roster controls what they can do in
+              Trailer Abby.
             </p>
             <ul className="list-inside list-disc space-y-1 text-[#71767b]">
               {user.role === "administrator" && (
@@ -186,20 +227,17 @@ export function UserDetailPanel({
         {tab === "activity" && (
           <div className="space-y-3 text-sm">
             <div className="border border-[#2f3336] bg-[#080808] p-3">
-              <p className="text-white">Last login</p>
+              <p className="text-white">Last sign-in</p>
               <p className="mt-1 text-[#71767b]">
-                {formatUserLastLogin(user.lastLoginAt)}
+                {formatUserLastLogin(lastLogin)}
               </p>
             </div>
             <div className="border border-[#2f3336] bg-[#080808] p-3">
-              <p className="text-white">Profile updated</p>
+              <p className="text-white">Roster updated</p>
               <p className="mt-1 text-[#71767b]">
                 {formatUserLastLogin(user.updatedAt)}
               </p>
             </div>
-            <p className="text-[#71767b]">
-              Detailed activity logs are not enabled for this deployment.
-            </p>
           </div>
         )}
 
@@ -228,15 +266,24 @@ export function UserDetailPanel({
       </div>
 
       <div className="flex flex-col gap-2 border-t border-[#2f3336] p-4">
-        <Button
-          type="button"
-          variant="outline"
-          className="h-9 w-full justify-start rounded-none border-[#2f3336] bg-transparent text-[#1d9bf0] hover:bg-[#16181c] hover:text-[#1d9bf0]"
-          disabled
-        >
-          <KeyRound strokeWidth={1.75} />
-          Reset Password
-        </Button>
+        {!isSelf && user.clerkStatus !== "linked" && onInviteClerk && (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 w-full justify-start rounded-none border-[#2f3336] bg-transparent text-[#1d9bf0] hover:bg-[#16181c] hover:text-[#1d9bf0]"
+            onClick={onInviteClerk}
+            disabled={inviting}
+          >
+            {inviting ? (
+              <Loader2 className="animate-spin" strokeWidth={1.75} />
+            ) : (
+              <KeyRound strokeWidth={1.75} />
+            )}
+            {user.clerkStatus === "invited"
+              ? "Resend Clerk invite"
+              : "Send Clerk invite"}
+          </Button>
+        )}
         <Button
           type="button"
           variant="outline"
@@ -244,18 +291,20 @@ export function UserDetailPanel({
           onClick={onEdit}
         >
           <Pencil strokeWidth={1.75} />
-          Edit User
+          Edit roster profile
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="h-9 w-full justify-start rounded-none border-[#f4212e]/30 bg-transparent text-[#f4212e] hover:bg-[#f4212e]/10 hover:text-[#f4212e]"
-          onClick={onDeactivate}
-          disabled={user.status === "inactive"}
-        >
-          <UserX strokeWidth={1.75} />
-          Deactivate User
-        </Button>
+        {!isSelf && (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 w-full justify-start rounded-none border-[#f4212e]/30 bg-transparent text-[#f4212e] hover:bg-[#f4212e]/10 hover:text-[#f4212e]"
+            onClick={onDeactivate}
+            disabled={user.status === "inactive"}
+          >
+            <UserX strokeWidth={1.75} />
+            Deactivate User
+          </Button>
+        )}
       </div>
     </aside>
   );

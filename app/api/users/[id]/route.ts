@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/api-auth";
+import { enrichUsersWithClerk } from "@/lib/user-clerk";
 import { deleteUser, updateUser } from "@/lib/users";
 import type { AppUserUpdate } from "@/lib/types";
 
@@ -13,7 +14,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = (await request.json()) as AppUserUpdate;
     const user = await updateUser(id, body);
-    return NextResponse.json({ user });
+    const [enriched] = await enrichUsersWithClerk([user]);
+    return NextResponse.json({ user: enriched });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to update user";

@@ -1,12 +1,21 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getGuestSessionUser } from "@/lib/auth";
-import { getUserByEmail, updateUser } from "@/lib/users";
+import { clerkProfileFromUser } from "@/lib/clerk-roster";
+import { resolveAppUserForClerk } from "@/lib/sync-session-user";
+import { mergeUserWithClerk } from "@/lib/user-clerk";
 
 export async function GET() {
   const guest = await getGuestSessionUser();
   if (guest) {
-    return NextResponse.json({ user: guest });
+    return NextResponse.json({
+      user: {
+        ...guest,
+        imageUrl: null,
+        clerkStatus: "none" as const,
+        clerkLastSignInAt: null,
+      },
+    });
   }
 
   const { userId } = await auth();
@@ -15,26 +24,17 @@ export async function GET() {
   }
 
   const clerkUser = await currentUser();
-  const email =
-    clerkUser?.primaryEmailAddress?.emailAddress?.toLowerCase().trim();
-  if (!email) {
-    return NextResponse.json({ error: "No email on account" }, { status: 403 });
+  if (!clerkUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const appUser = await getUserByEmail(email);
-  if (!appUser || appUser.status !== "active") {
+  const appUser = await resolveAppUserForClerk(clerkUser);
+  if (!appUser) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
-  const now = new Date().toISOString();
-  if (appUser.lastLoginAt.slice(0, 10) !== now.slice(0, 10)) {
-    try {
-      const updated = await updateUser(appUser.id, { lastLoginAt: now });
-      return NextResponse.json({ user: updated });
-    } catch {
-      return NextResponse.json({ user: appUser });
-    }
-  }
-
-  return NextResponse.json({ user: appUser });
+  const profile = clerkProfileFromUser(clerkUser);
+  return NextResponse.json({
+    user: mergeUserWithClerk(appUser, profile),
+  });
 }

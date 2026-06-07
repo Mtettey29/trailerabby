@@ -1,5 +1,5 @@
-import { Redis } from "@upstash/redis";
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { getRedis, redisConfigured } from "@/lib/redis";
 import path from "path";
 import type { AppSettings, AppSettingsUpdate, CompanySettings } from "./types";
 
@@ -41,22 +41,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   company: DEFAULT_COMPANY_SETTINGS,
   updatedAt: new Date().toISOString(),
 };
-
-function redisConfigured(): boolean {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-  return Boolean(url && token);
-}
-
-function getRedis(): Redis {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL!;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN!;
-  return new Redis({ url, token });
-}
 
 function mergeSettings(
   current: AppSettings,

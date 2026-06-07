@@ -6,11 +6,14 @@ import { Logo } from "@/components/logo";
 import { SectionNavLink } from "@/components/section-nav-link";
 import { useAppUser } from "@/components/auth-provider";
 import { collapseNavItem, navItems, type SidebarNavItem } from "@/components/app-shared";
+import { isGuestViewer } from "@/lib/guest-token";
 import { filterNavForRole } from "@/lib/permissions";
 import { parseFleetStatusParam } from "@/lib/trailer-display";
+import { UserAccountControls } from "@/components/user-account-controls";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -82,6 +85,7 @@ function CollapseButton() {
 
 export function AppSidebar() {
   const { user } = useAppUser();
+  const guest = isGuestViewer(user);
   const visibleNav = user ? filterNavForRole(navItems, user.role) : navItems;
 
   return (
@@ -108,6 +112,11 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+      {user && !guest ? (
+        <SidebarFooter className="p-0">
+          <UserAccountControls layout="sidebar" />
+        </SidebarFooter>
+      ) : null}
     </Sidebar>
   );
 }

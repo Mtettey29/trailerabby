@@ -1,9 +1,9 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
 import { Bell, CalendarRange } from "lucide-react";
 import Link from "next/link";
 import { useAppUser } from "@/components/auth-provider";
+import { UserAccountControls } from "@/components/user-account-controls";
 import { canManageUsers } from "@/lib/permissions";
 import { isGuestViewer } from "@/lib/guest-token";
 import { Button } from "@/components/ui/button";
@@ -76,16 +76,7 @@ export function PageHeaderActions() {
           </Button>
         </div>
       ) : (
-        <div className="flex items-center rounded-none border border-[#2f3336] bg-[#16181c] px-2 py-1">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "size-7 rounded-none",
-                userButtonPopoverCard: "rounded-none border border-[#2f3336]",
-              },
-            }}
-          />
-        </div>
+        <UserAccountControls />
       )}
     </>
   );

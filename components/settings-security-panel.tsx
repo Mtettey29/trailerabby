@@ -142,9 +142,10 @@ export function SettingsSecurityPanel() {
           </li>
         </ul>
         <p className="mt-4 text-xs text-[#71767b]">
-          Clerk runs in restricted sign-up mode (no paid allowlist). Only staff
-          accounts created by an administrator can sign in. Anyone not on this
-          roster lands on /no-access after sign-in.
+          Production Clerk instance on trailerabby.wotedigital.tech. Restricted
+          sign-up — only invited staff can authenticate. The Users page links
+          each roster row to its Clerk profile (photo, sign-in, invites).
+          Anyone not on the roster lands on /no-access after sign-in.
         </p>
       </div>
     </div>

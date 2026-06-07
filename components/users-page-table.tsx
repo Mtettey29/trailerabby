@@ -9,11 +9,9 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { UserRoleBadge, UserStatusBadge } from "@/components/user-badges";
-import type { AppUser } from "@/lib/types";
-import {
-  formatUserLastLogin,
-  getUserInitials,
-} from "@/lib/user-display";
+import { UserAvatar } from "@/components/user-avatar";
+import type { AppUserView } from "@/lib/types";
+import { formatUserLastLogin } from "@/lib/user-display";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -38,15 +36,17 @@ type SortKey =
 type SortDir = "asc" | "desc";
 
 interface UsersPageTableProps {
-  users: AppUser[];
+  users: AppUserView[];
   selectedId: string | null;
-  onSelect: (user: AppUser) => void;
-  onEdit: (user: AppUser) => void;
+  currentUserId?: string | null;
+  onSelect: (user: AppUserView) => void;
+  onEdit: (user: AppUserView) => void;
 }
 
 export function UsersPageTable({
   users,
   selectedId,
+  currentUserId,
   onSelect,
   onEdit,
 }: UsersPageTableProps) {
@@ -76,11 +76,16 @@ export function UsersPageTable({
         case "status":
           diff = a.status.localeCompare(b.status);
           break;
-        case "lastLogin":
-          diff =
-            new Date(a.lastLoginAt).getTime() -
-            new Date(b.lastLoginAt).getTime();
+        case "lastLogin": {
+          const aTime = new Date(
+            a.clerkLastSignInAt ?? a.lastLoginAt
+          ).getTime();
+          const bTime = new Date(
+            b.clerkLastSignInAt ?? b.lastLoginAt
+          ).getTime();
+          diff = aTime - bTime;
           break;
+        }
       }
       return sortDir === "asc" ? diff : -diff;
     });
@@ -195,17 +200,25 @@ export function UsersPageTable({
                 key={user.id}
                 className={cn(
                   "cursor-pointer border-[#2f3336] hover:bg-[#080808]",
-                  selectedId === user.id && "bg-[#080808]"
+                  selectedId === user.id && "bg-[#080808]",
+                  currentUserId === user.id && "ring-1 ring-inset ring-[#1d9bf0]/40"
                 )}
                 onClick={() => onSelect(user)}
               >
                 <TableCell className="px-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-none border border-[#2f3336] bg-[#16181c] text-xs font-medium text-white">
-                      {getUserInitials(user.name)}
-                    </span>
+                    <UserAvatar
+                      name={user.name}
+                      imageUrl={user.imageUrl}
+                      size="sm"
+                    />
                     <span className="text-sm font-medium text-white">
                       {user.name}
+                      {currentUserId === user.id && (
+                        <span className="ml-1.5 text-xs font-normal text-[#71767b]">
+                          (you)
+                        </span>
+                      )}
                     </span>
                   </div>
                 </TableCell>
@@ -225,7 +238,9 @@ export function UsersPageTable({
                   <UserStatusBadge status={user.status} />
                 </TableCell>
                 <TableCell className="hidden px-4 text-sm text-[#e7e9ea] lg:table-cell">
-                  {formatUserLastLogin(user.lastLoginAt)}
+                  {formatUserLastLogin(
+                    user.clerkLastSignInAt ?? user.lastLoginAt
+                  )}
                 </TableCell>
                 <TableCell className="px-4">
                   <Button

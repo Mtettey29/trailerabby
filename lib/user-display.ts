@@ -93,10 +93,10 @@ export function uniqueUserLocations(users: AppUser[]): string[] {
   return [...values].sort();
 }
 
-export function applyUserFilters(
-  users: AppUser[],
+export function applyUserFilters<T extends AppUser>(
+  users: T[],
   filters: UserPageFilters
-): AppUser[] {
+): T[] {
   const search = filters.search.trim().toLowerCase();
 
   return users.filter((user) => {

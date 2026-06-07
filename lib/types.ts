@@ -368,6 +368,8 @@ export const USER_STATUSES = ["active", "inactive"] as const;
 
 export type UserStatus = (typeof USER_STATUSES)[number];
 
+export type ClerkLinkStatus = "linked" | "invited" | "none";
+
 export interface AppUser {
   id: string;
   name: string;
@@ -378,9 +380,18 @@ export interface AppUser {
   location: string;
   locationAccess: string[];
   notes: string;
+  /** Linked Clerk production user id (set on first sign-in) */
+  clerkUserId?: string;
   lastLoginAt: string;
   joinedAt: string;
   updatedAt: string;
+}
+
+/** App roster row merged with live Clerk profile data */
+export interface AppUserView extends AppUser {
+  imageUrl: string | null;
+  clerkStatus: ClerkLinkStatus;
+  clerkLastSignInAt: string | null;
 }
 
 export type AppUserInput = Pick<
@@ -403,6 +414,7 @@ export type AppUserUpdate = Partial<
     | "locationAccess"
     | "notes"
     | "lastLoginAt"
+    | "clerkUserId"
   >
 >;
 

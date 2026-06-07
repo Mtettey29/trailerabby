@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { navigateAfterSignIn } from "@/lib/post-sign-in";
 
 function GoogleIcon() {
   return (
@@ -74,14 +75,7 @@ const Login1 = ({
             router.push("/sign-in");
             return;
           }
-          const destination = decorateUrl(
-            process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL ?? "/"
-          );
-          if (destination.startsWith("http")) {
-            window.location.href = destination;
-            return;
-          }
-          router.push(destination);
+          void navigateAfterSignIn(router, decorateUrl);
         },
       });
     }

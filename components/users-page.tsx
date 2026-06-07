@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { useAppUser } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { UserDetailPanel } from "@/components/user-detail-panel";
 import { UserFiltersBar } from "@/components/user-filters-bar";
@@ -13,7 +15,7 @@ import {
   DEFAULT_USER_PAGE_FILTERS,
   type UserPageFilters,
 } from "@/lib/user-display";
-import type { AppUser, Location } from "@/lib/types";
+import type { AppUser, AppUserView, Location } from "@/lib/types";
 import {
   Alert,
   AlertAction,
@@ -38,14 +40,17 @@ function toPayload(data: UserFormData) {
 }
 
 export function UsersPage() {
-  const [users, setUsers] = useState<AppUser[]>([]);
+  const { user: sessionUser } = useAppUser();
+  const searchParams = useSearchParams();
+  const [users, setUsers] = useState<AppUserView[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<AppUser | null>(null);
-  const [selected, setSelected] = useState<AppUser | null>(null);
+  const [selected, setSelected] = useState<AppUserView | null>(null);
   const [saving, setSaving] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const [filters, setFilters] = useState<UserPageFilters>(
     DEFAULT_USER_PAGE_FILTERS
   );
@@ -78,7 +83,7 @@ export function UsersPage() {
       if (!usersRes.ok) throw new Error("Failed to load users");
       if (!locationsRes.ok) throw new Error("Failed to load locations");
 
-      const usersData = (await usersRes.json()) as { users: AppUser[] };
+      const usersData = (await usersRes.json()) as { users: AppUserView[] };
       const locationsData = (await locationsRes.json()) as {
         locations: Location[];
       };
@@ -105,6 +110,12 @@ export function UsersPage() {
     if (fresh) setSelected(fresh);
     else setSelected(null);
   }, [users, selected]);
+
+  useEffect(() => {
+    if (searchParams.get("me") !== "1" || !sessionUser) return;
+    const self = users.find((user) => user.id === sessionUser.id);
+    if (self) setSelected(self);
+  }, [searchParams, sessionUser, users]);
 
   function openAdd() {
     setEditing(null);
@@ -136,7 +147,7 @@ export function UsersPage() {
           const err = (await res.json()) as { error?: string };
           throw new Error(err.error ?? "Update failed");
         }
-        const { user } = (await res.json()) as { user: AppUser };
+        const { user } = (await res.json()) as { user: AppUserView };
         setUsers((prev) => prev.map((u) => (u.id === user.id ? user : u)));
         setSelected((prev) => (prev?.id === user.id ? user : prev));
       } else {
@@ -149,7 +160,7 @@ export function UsersPage() {
           const err = (await res.json()) as { error?: string };
           throw new Error(err.error ?? "Create failed");
         }
-        const { user } = (await res.json()) as { user: AppUser };
+        const { user } = (await res.json()) as { user: AppUserView };
         setUsers((prev) => [...prev, user]);
         setSelected(user);
       }
@@ -181,7 +192,30 @@ export function UsersPage() {
     }
   }
 
-  async function handleDeactivate(user: AppUser) {
+  async function handleInviteClerk(user: AppUserView) {
+    setInviting(true);
+    try {
+      const res = await fetch(`/api/users/${user.id}/clerk-invite`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Invite failed");
+      }
+      const { user: updated } = (await res.json()) as { user: AppUserView };
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? updated : u))
+      );
+      setSelected(updated);
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Invite failed");
+    } finally {
+      setInviting(false);
+    }
+  }
+
+  async function handleDeactivate(user: AppUserView) {
     setSaving(true);
     try {
       const res = await fetch(`/api/users/${user.id}`, {
@@ -190,7 +224,7 @@ export function UsersPage() {
         body: JSON.stringify({ status: "inactive" }),
       });
       if (!res.ok) throw new Error("Deactivate failed");
-      const { user: updated } = (await res.json()) as { user: AppUser };
+      const { user: updated } = (await res.json()) as { user: AppUserView };
       setUsers((prev) =>
         prev.map((u) => (u.id === updated.id ? updated : u))
       );
@@ -260,6 +294,7 @@ export function UsersPage() {
               <UsersPageTable
                 users={filteredUsers}
                 selectedId={selected?.id ?? null}
+                currentUserId={sessionUser?.id ?? null}
                 onSelect={setSelected}
                 onEdit={openEdit}
               />
@@ -269,9 +304,16 @@ export function UsersPage() {
               <div className="mt-6 xl:mt-0 xl:ml-0 xl:border-l-0">
                 <UserDetailPanel
                   user={selected}
+                  isSelf={sessionUser?.id === selected.id}
+                  inviting={inviting}
                   onClose={() => setSelected(null)}
                   onEdit={() => openEdit(selected)}
                   onDeactivate={() => void handleDeactivate(selected)}
+                  onInviteClerk={
+                    sessionUser?.id !== selected.id
+                      ? () => void handleInviteClerk(selected)
+                      : undefined
+                  }
                 />
               </div>
             )}

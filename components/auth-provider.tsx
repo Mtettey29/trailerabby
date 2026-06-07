@@ -9,12 +9,12 @@ import {
   useState,
 } from "react";
 import { canMutate } from "@/lib/permissions";
-import type { AppUser } from "@/lib/types";
+import type { AppUserView } from "@/lib/types";
 
 type AuthStatus = "loading" | "authenticated" | "forbidden" | "unauthenticated";
 
 type AuthContextValue = {
-  user: AppUser | null;
+  user: AppUserView | null;
   status: AuthStatus;
   refresh: () => Promise<void>;
 };
@@ -22,7 +22,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUserView | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   const refresh = useCallback(async () => {
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStatus("forbidden");
         return;
       }
-      const data = (await res.json()) as { user: AppUser };
+      const data = (await res.json()) as { user: AppUserView };
       setUser(data.user);
       setStatus("authenticated");
     } catch {

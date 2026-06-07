@@ -1,5 +1,5 @@
-import { Redis } from "@upstash/redis";
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { getRedis, redisConfigured } from "@/lib/redis";
 import path from "path";
 import { randomUUID } from "crypto";
 import type {
@@ -15,22 +15,6 @@ import {
 
 const KV_KEY = "maintenance";
 const LOCAL_DATA_PATH = path.join(process.cwd(), ".data", "maintenance.json");
-
-function redisConfigured(): boolean {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-  return Boolean(url && token);
-}
-
-function getRedis(): Redis {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL!;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN!;
-  return new Redis({ url, token });
-}
 
 function isValidType(type: string): type is MaintenanceService["serviceType"] {
   return (MAINTENANCE_SERVICE_TYPES as readonly string[]).includes(type);

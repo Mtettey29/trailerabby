@@ -25,6 +25,9 @@ export default function RootLayout({
         className={`${geistSans.variable} min-h-screen bg-black font-sans text-[#e7e9ea] antialiased`}
       >
         <ClerkProvider
+          signInUrl="/sign-in"
+          signInFallbackRedirectUrl="/"
+          afterSignOutUrl="/sign-in"
           appearance={{
             variables: {
               colorBackground: "#000000",

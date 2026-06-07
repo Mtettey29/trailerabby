@@ -5,7 +5,7 @@ import {
   GUEST_VIEWER_USER,
   verifyGuestViewToken,
 } from "./guest-token";
-import { getUserByEmail, updateUser } from "./users";
+import { resolveAppUserForClerk } from "./sync-session-user";
 import type { AppUser } from "./types";
 
 export async function getGuestSessionUser(): Promise<AppUser | null> {
@@ -27,24 +27,7 @@ export async function getSessionUser(): Promise<AppUser | null> {
   if (!userId) return null;
 
   const clerkUser = await currentUser();
-  const email =
-    clerkUser?.primaryEmailAddress?.emailAddress?.toLowerCase().trim();
-  if (!email) return null;
+  if (!clerkUser) return null;
 
-  const appUser = await getUserByEmail(email);
-  if (!appUser || appUser.status !== "active") return null;
-
-  const now = new Date().toISOString();
-  const lastDay = appUser.lastLoginAt.slice(0, 10);
-  const today = now.slice(0, 10);
-  if (lastDay !== today) {
-    try {
-      await updateUser(appUser.id, { lastLoginAt: now });
-      return { ...appUser, lastLoginAt: now };
-    } catch {
-      return appUser;
-    }
-  }
-
-  return appUser;
+  return resolveAppUserForClerk(clerkUser);
 }

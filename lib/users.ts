@@ -1,5 +1,5 @@
-import { Redis } from "@upstash/redis";
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { getRedis, redisConfigured } from "@/lib/redis";
 import path from "path";
 import { randomUUID } from "crypto";
 import type { AppUser, AppUserInput, AppUserUpdate } from "./types";
@@ -7,22 +7,6 @@ import { USER_ROLES, USER_STATUSES } from "./types";
 
 const KV_KEY = "users";
 const LOCAL_DATA_PATH = path.join(process.cwd(), ".data", "users.json");
-
-function redisConfigured(): boolean {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-  return Boolean(url && token);
-}
-
-function getRedis(): Redis {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL!;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN!;
-  return new Redis({ url, token });
-}
 
 function isValidRole(role: string): role is AppUser["role"] {
   return (USER_ROLES as readonly string[]).includes(role);
@@ -146,6 +130,9 @@ export async function updateUser(
     ...(input.notes !== undefined && { notes: input.notes.trim() }),
     ...(input.lastLoginAt !== undefined && {
       lastLoginAt: input.lastLoginAt,
+    }),
+    ...(input.clerkUserId !== undefined && {
+      clerkUserId: input.clerkUserId,
     }),
     updatedAt: new Date().toISOString(),
   };

@@ -1,5 +1,5 @@
-import { Redis } from "@upstash/redis";
 import { mkdir, readFile, writeFile } from "fs/promises";
+import { getRedis, redisConfigured } from "@/lib/redis";
 import path from "path";
 import { randomUUID } from "crypto";
 import { normalizeTrailerAsset } from "./trailer-assets";
@@ -8,22 +8,6 @@ import { TRAILER_STATUSES } from "./types";
 
 const KV_KEY = "trailers";
 const LOCAL_DATA_PATH = path.join(process.cwd(), ".data", "trailers.json");
-
-function redisConfigured(): boolean {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-  return Boolean(url && token);
-}
-
-function getRedis(): Redis {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL!;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN!;
-  return new Redis({ url, token });
-}
 
 function isValidStatus(status: string): status is Trailer["status"] {
   return (TRAILER_STATUSES as readonly string[]).includes(status);
