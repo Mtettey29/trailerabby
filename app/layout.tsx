@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BRAND_LOGO_URL } from "@/lib/brand";
+import { BRAND_ICON_SIZES, BRAND_LOGO_URL, brandIconUrl } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +13,14 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Trailer Abby",
   description: "Shared trailer tracking board for Little Abby dispatch",
+  manifest: "/manifest.webmanifest",
   icons: {
-    icon: BRAND_LOGO_URL,
-    apple: BRAND_LOGO_URL,
+    icon: BRAND_ICON_SIZES.filter((s) => s !== 180).map((size) => ({
+      url: brandIconUrl(size),
+      sizes: `${size}x${size}`,
+      type: "image/png",
+    })),
+    apple: [{ url: brandIconUrl(180), sizes: "180x180", type: "image/png" }],
   },
 };
 

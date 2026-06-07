@@ -17,6 +17,7 @@
     "seed:all": "node scripts/seed-all.mjs",
     "redis:check": "node scripts/redis-check.mjs",
     "redis:push": "node scripts/push-to-redis.mjs",
+    "icons:generate": "node scripts/generate-favicons.mjs",
     "clerk": "clerk",
     "clerk:login": "clerk auth login",
     "clerk:env": "clerk env pull",
@@ -55,6 +56,7 @@
     "clerk": "^1.5.0",
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.3.3",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.8.3"
   }
