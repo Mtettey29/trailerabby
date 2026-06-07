@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BRAND_ICON_SIZES, BRAND_LOGO_URL, brandIconUrl } from "@/lib/brand";
+import { BRAND_ICON_SIZES, BRAND_LOGO_CLERK_URL, BRAND_LOGO_URL, brandIconUrl } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,7 +46,7 @@ export default function RootLayout({
               borderRadius: "0px",
             },
             layout: {
-              logoImageUrl: BRAND_LOGO_URL,
+              logoImageUrl: BRAND_LOGO_CLERK_URL,
               logoLinkUrl: "/",
             },
           }}

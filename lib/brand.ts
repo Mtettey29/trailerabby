@@ -1,9 +1,12 @@
-/** Remote source — run `npm run icons:generate` to refresh inverted assets */
+/** Transparent animated source — inverted in UI via CSS; run `npm run icons:generate` */
 export const BRAND_LOGO_SOURCE_URL =
-  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_animated.gif";
+  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_transparent.gif";
 
-/** Inverted logo for dark UI — generated to public/brand/logo.gif */
+/** Local copy of transparent logo (display with CSS invert on dark UI) */
 export const BRAND_LOGO_URL = "/brand/logo.gif";
+
+/** Inverted still for Clerk / contexts without CSS invert */
+export const BRAND_LOGO_CLERK_URL = "/brand/logo-clerk.png";
 
 export const BRAND_NAME = "Little Abby Trucking";
 

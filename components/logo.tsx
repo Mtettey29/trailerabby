@@ -27,7 +27,7 @@ export function Logo({ className, size = "md", ...props }: LogoProps) {
         width={320}
         height={120}
         unoptimized
-        className={cn("w-auto object-contain", heightClass)}
+        className={cn("w-auto object-contain invert", heightClass)}
         priority={size === "lg"}
       />
     </div>

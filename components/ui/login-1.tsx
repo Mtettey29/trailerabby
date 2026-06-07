@@ -38,14 +38,12 @@ function GoogleIcon() {
 }
 
 interface Login1Props {
-  heading?: string;
   loginText?: string;
   googleText?: string;
   helpText?: string;
 }
 
 const Login1 = ({
-  heading = "Sign in to Trailer Abby",
   loginText = "Sign in",
   googleText = "Sign in with Google",
   helpText = "Need access? Contact your administrator.",
@@ -94,15 +92,7 @@ const Login1 = ({
     <section className="h-screen bg-black">
       <div className="flex h-full items-center justify-center px-4">
         <div className="flex w-full max-w-sm flex-col items-center gap-y-8 rounded-md border border-[#2f3336] bg-black px-6 py-12 shadow-md">
-          <div className="flex flex-col items-center gap-y-3 text-center">
-            <Logo size="lg" className="scale-110" />
-            {heading ? (
-              <h1 className="text-2xl font-semibold text-[#e7e9ea]">{heading}</h1>
-            ) : null}
-            <p className="text-sm text-[#71767b]">
-              Little Abby dispatch account
-            </p>
-          </div>
+          <Logo size="lg" className="scale-110" />
 
           <form
             className="flex w-full flex-col gap-8"

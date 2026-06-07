@@ -6,13 +6,14 @@ import sharp from "sharp";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const SOURCE_URL =
-  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_animated.gif";
+  "https://pub-a25c26cd10394d818d79893e73296a9a.r2.dev/little_abby_trucking_transparent.gif";
 const BRAND_DIR = path.join(ROOT, "public", "brand");
 const LOGO_PATH = path.join(BRAND_DIR, "logo.gif");
 const OUT_DIR = path.join(ROOT, "public", "icons");
 const APP_DIR = path.join(ROOT, "app");
 
 const SIZES = [16, 32, 48, 64, 128, 180, 192, 512];
+const BG_TOLERANCE = 42;
 
 async function downloadSource() {
   const res = await fetch(SOURCE_URL);
@@ -22,22 +23,84 @@ async function downloadSource() {
   return Buffer.from(await res.arrayBuffer());
 }
 
-async function invertAnimatedLogo(source) {
-  await mkdir(BRAND_DIR, { recursive: true });
-
-  const inverted = await sharp(source, { animated: true })
-    .negate({ alpha: false })
-    .gif()
-    .toBuffer();
-
-  await writeFile(LOGO_PATH, inverted);
-  console.log("  public/brand/logo.gif (inverted animated logo)");
-  return inverted;
+function colorDistance(r1, g1, b1, r2, g2, b2) {
+  return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
 }
 
-/** Crop to the bold "ABBY" center band for legibility at small sizes. */
-async function cropToAbbyMark(input) {
-  const meta = await sharp(input, { animated: false }).metadata();
+function sampleBackgroundColor(data, width, height, channels) {
+  const corners = [
+    0,
+    (width - 1) * channels,
+    (height - 1) * width * channels,
+    ((height - 1) * width + (width - 1)) * channels,
+  ];
+
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  for (const index of corners) {
+    r += data[index];
+    g += data[index + 1];
+    b += data[index + 2];
+  }
+
+  return { r: r / 4, g: g / 4, b: b / 4 };
+}
+
+async function removeSolidBackground(input) {
+  const { data, info } = await sharp(input)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width, height, channels } = info;
+  const { r: bgR, g: bgG, b: bgB } = sampleBackgroundColor(
+    data,
+    width,
+    height,
+    channels
+  );
+
+  for (let i = 0; i < data.length; i += channels) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const a = data[i + 3];
+
+    if (a === 0) continue;
+
+    if (colorDistance(r, g, b, bgR, bgG, bgB) <= BG_TOLERANCE) {
+      data[i + 3] = 0;
+    }
+  }
+
+  return sharp(data, {
+    raw: {
+      width: info.width,
+      height: info.height,
+      channels: info.channels,
+    },
+  });
+}
+
+async function saveTransparentLogo(source) {
+  await mkdir(BRAND_DIR, { recursive: true });
+  await writeFile(LOGO_PATH, source);
+  console.log("  public/brand/logo.gif (transparent source, inverted in UI via CSS)");
+}
+
+async function firstFrame(source) {
+  return sharp(source, { animated: true, pages: 1 }).png().toBuffer();
+}
+
+async function invertFrame(frameBuffer) {
+  const cleared = await removeSolidBackground(frameBuffer);
+  return (await cleared.negate({ alpha: false })).png().toBuffer();
+}
+
+async function cropToAbbyMark(firstFrameBuffer) {
+  const meta = await sharp(firstFrameBuffer).metadata();
   const width = meta.width ?? 0;
   const height = meta.height ?? 0;
 
@@ -45,19 +108,21 @@ async function cropToAbbyMark(input) {
     throw new Error("Could not read source image dimensions");
   }
 
-  const cropHeight = Math.round(height * 0.42);
-  const cropTop = Math.round(height * 0.28);
-  const cropWidth = Math.round(width * 0.62);
-  const cropLeft = Math.round((width - cropWidth) / 2);
+  const cropHeight = Math.min(Math.round(height * 0.42), height);
+  const cropTop = Math.min(Math.round(height * 0.28), height - cropHeight);
+  const cropWidth = Math.min(Math.round(width * 0.62), width);
+  const cropLeft = Math.min(
+    Math.round((width - cropWidth) / 2),
+    width - cropWidth
+  );
 
-  return sharp(input, { animated: false })
+  return sharp(firstFrameBuffer)
     .extract({
       left: cropLeft,
       top: cropTop,
       width: cropWidth,
       height: cropHeight,
     })
-    .negate({ alpha: false })
     .png()
     .toBuffer();
 }
@@ -76,10 +141,13 @@ async function main() {
   console.log("Downloading source logo…");
   const source = await downloadSource();
 
-  console.log("Inverting colors (black ↔ white)…");
-  const inverted = await invertAnimatedLogo(source);
+  await saveTransparentLogo(source);
 
-  console.log("Cropping inverted ABBY mark for favicons…");
+  console.log("Building inverted favicons from first frame…");
+  const frame = await firstFrame(source);
+  const inverted = await invertFrame(frame);
+  await writeFile(path.join(BRAND_DIR, "logo-clerk.png"), inverted);
+  console.log("  public/brand/logo-clerk.png (inverted still for Clerk)");
   const cropped = await cropToAbbyMark(inverted);
 
   await mkdir(OUT_DIR, { recursive: true });
