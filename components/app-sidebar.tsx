@@ -9,7 +9,7 @@ import { collapseNavItem, navItems, type SidebarNavItem } from "@/components/app
 import { isGuestViewer } from "@/lib/guest-token";
 import { filterNavForRole } from "@/lib/permissions";
 import { parseFleetStatusParam } from "@/lib/trailer-display";
-import { UserAccountControls } from "@/components/user-account-controls";
+import { SidebarAccountFooter } from "@/components/sidebar-account-footer";
 import {
   Sidebar,
   SidebarContent,
@@ -99,7 +99,7 @@ export function AppSidebar() {
           className="flex h-8 items-center gap-1.5 rounded-lg px-1.5 hover:bg-[#16181c] group-data-[collapsible=icon]:justify-center"
           href="/"
         >
-          <Logo className="text-xs" />
+          <Logo size="sm" />
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -114,7 +114,7 @@ export function AppSidebar() {
       </SidebarContent>
       {user && !guest ? (
         <SidebarFooter className="p-0">
-          <UserAccountControls layout="sidebar" />
+          <SidebarAccountFooter />
         </SidebarFooter>
       ) : null}
     </Sidebar>

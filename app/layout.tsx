@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { BRAND_LOGO_URL } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -11,7 +12,11 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: "Trailer Abby",
-  description: "Shared trailer tracking board for dispatch",
+  description: "Shared trailer tracking board for Little Abby dispatch",
+  icons: {
+    icon: BRAND_LOGO_URL,
+    apple: BRAND_LOGO_URL,
+  },
 };
 
 export default function RootLayout({
@@ -34,6 +39,10 @@ export default function RootLayout({
               colorText: "#e7e9ea",
               colorPrimary: "#1d9bf0",
               borderRadius: "0px",
+            },
+            layout: {
+              logoImageUrl: BRAND_LOGO_URL,
+              logoLinkUrl: "/",
             },
           }}
         >

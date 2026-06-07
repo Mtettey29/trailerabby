@@ -1,10 +1,7 @@
 "use client";
 
 import { Bell, CalendarRange } from "lucide-react";
-import Link from "next/link";
 import { useAppUser } from "@/components/auth-provider";
-import { UserAccountControls } from "@/components/user-account-controls";
-import { canManageUsers } from "@/lib/permissions";
 import { isGuestViewer } from "@/lib/guest-token";
 import { Button } from "@/components/ui/button";
 
@@ -53,16 +50,6 @@ export function PageHeaderActions() {
       >
         <Bell className="text-white" strokeWidth={1.75} />
       </Button>
-      {user && canManageUsers(user.role) && (
-        <Button
-          type="button"
-          variant="outline"
-          className="h-9 rounded-none border-[#2f3336] bg-[#16181c] text-sm text-white hover:bg-[#080808] hover:text-white"
-          render={<Link href="/users" />}
-        >
-          Dispatch team
-        </Button>
-      )}
       {guest ? (
         <div className="flex items-center gap-2">
           <span className="text-xs text-[#71767b]">View only</span>
@@ -75,9 +62,7 @@ export function PageHeaderActions() {
             Exit view
           </Button>
         </div>
-      ) : (
-        <UserAccountControls />
-      )}
+      ) : null}
     </>
   );
 }

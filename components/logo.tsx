@@ -1,17 +1,35 @@
-import { Truck } from "lucide-react";
+import Image from "next/image";
 import type React from "react";
+import { BRAND_LOGO_URL, BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-export const LogoIcon = (props: React.ComponentProps<typeof Truck>) => (
-  <Truck strokeWidth={1.75} {...props} />
-);
+const sizeClasses = {
+  sm: "h-6",
+  md: "h-8",
+  lg: "h-14",
+} as const;
 
-export const Logo = ({
-  className,
-  ...props
-}: React.ComponentProps<"div">) => (
-  <div className={cn("flex items-center gap-2 text-white", className)} {...props}>
-    <Truck className="size-3.5 shrink-0" strokeWidth={1.75} />
-    <span className="text-xs font-bold tracking-tight">Trailer Abby</span>
-  </div>
-);
+type LogoProps = React.ComponentProps<"div"> & {
+  size?: keyof typeof sizeClasses;
+};
+
+export function Logo({ className, size = "md", ...props }: LogoProps) {
+  const heightClass = sizeClasses[size];
+
+  return (
+    <div
+      className={cn("flex shrink-0 items-center", className)}
+      {...props}
+    >
+      <Image
+        src={BRAND_LOGO_URL}
+        alt={BRAND_NAME}
+        width={320}
+        height={120}
+        unoptimized
+        className={cn("w-auto object-contain", heightClass)}
+        priority={size === "lg"}
+      />
+    </div>
+  );
+}
